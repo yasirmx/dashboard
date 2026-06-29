@@ -1,0 +1,54 @@
+name: dashboard
+
+services:
+
+  # ── SQL Server ───────────────────────────────────────────────────────────────
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1' -b -C -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── Azurite (Azure Storage emulator for queue) ───────────────────────────────
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite --loose --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    ports:
+      - "10000:10000"   # Blob
+      - "10001:10001"   # Queue
+      - "10002:10002"   # Table
+
+  # ── Authorization API ────────────────────────────────────────────────────────
+  authorization-api:
+    build:
+      context: ./authorization
+      dockerfile: Dockerfile
+    ports:
+      - "7000:7000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Authorization: "Server=sql;Database=Authorization;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
+      Jwt__Secret: "${JWT_SECRET}"
+      Jwt__Issuer: "authorization-service"
+      Jwt__Audience: "dashboard"
+      # Azurite devstore well-known connection string (queue endpoint only)
+      Queue__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tiq/XCQFLGGW6lVHHJSqFbA==;QueueEndpoint=http://azurite:10001/devstoreaccount1;"
+      Queue__QueueName: "authorization"
+    depends_on:
+      sql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+
+volumes:
+  sql_data:
