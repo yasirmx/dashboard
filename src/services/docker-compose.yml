@@ -55,7 +55,7 @@ services:
       context: ./user
       dockerfile: Dockerfile
     ports:
-      - "7001:7000"
+      - "7001:7001"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Users: "Server=sql;Database=Users;User Id=sa;Password=MsSql2026!;TrustServerCertificate=True;"
