@@ -1,18 +1,18 @@
 # ── Stage 1: restore & build ──────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
+WORKDIR /user
 
 # Copy project files first for layer-cached restore
-COPY src/User.Domain/User.Domain.csproj                 src/User.Domain/
-COPY src/User.Application/User.Application.csproj        src/User.Application/
-COPY src/User.Infrastructure/User.Infrastructure.csproj src/User.Infrastructure/
-COPY src/User.Api/User.Api.csproj                        src/User.Api/
+COPY /User.Domain/User.Domain.csproj                 /User.Domain/
+COPY /User.Application/User.Application.csproj        /User.Application/
+COPY /User.Infrastructure/User.Infrastructure.csproj /User.Infrastructure/
+COPY /User.Api/User.Api.csproj                        /User.Api/
 
-RUN dotnet restore src/User.Api/User.Api.csproj
+RUN dotnet restore /User.Api/User.Api.csproj
 
 # Copy the rest and publish
 COPY . .
-RUN dotnet publish src/User.Api/User.Api.csproj \
+RUN dotnet publish /User.Api/User.Api.csproj \
     --configuration Release \
     --no-restore \
     --output /app/publish
