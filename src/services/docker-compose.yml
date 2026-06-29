@@ -22,7 +22,7 @@ services:
   # ── Azurite (Azure Storage emulator for queue) ───────────────────────────────
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
-    command: azurite --loose --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    command: azurite --loose --skipApiVersionCheck --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
     ports:
       - "10000:10000"   # Blob
       - "10001:10001"   # Queue
@@ -41,8 +41,7 @@ services:
       Jwt__Secret: "${JWT_SECRET}"
       Jwt__Issuer: "authorization-service"
       Jwt__Audience: "dashboard"
-      # Azurite devstore well-known connection string (queue endpoint only)
-      Queue__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tiq/XCQFLGGW6lVHHJSqFbA==;QueueEndpoint=http://azurite:10001/devstoreaccount1;"
+      Queue__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tiq/XCQFLGGW6lVHHJSqFbA==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
       Queue__QueueName: "authorization"
     depends_on:
       sql:
