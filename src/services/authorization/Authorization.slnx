@@ -1,8 +1,8 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Authorization.Api/Authorization.Api.csproj" />
-    <Project Path="src/Authorization.Application/Authorization.Application.csproj" />
-    <Project Path="src/Authorization.Domain/Authorization.Domain.csproj" />
-    <Project Path="src/Authorization.Infrastructure/Authorization.Infrastructure.csproj" />
+  <Folder Name="/authorization/">
+    <Project Path="/Authorization.Api/Authorization.Api.csproj" />
+    <Project Path="/Authorization.Application/Authorization.Application.csproj" />
+    <Project Path="/Authorization.Domain/Authorization.Domain.csproj" />
+    <Project Path="/Authorization.Infrastructure/Authorization.Infrastructure.csproj" />
   </Folder>
 </Solution>
