@@ -1,18 +1,18 @@
 # ── Stage 1: restore & build ──────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /authorization
+WORKDIR /user
 
 # Copy project files first for layer-cached restore
-COPY /Authorization.Domain/Authorization.Domain.csproj           /Authorization.Domain/
-COPY /Authorization.Application/Authorization.Application.csproj /Authorization.Application/
-COPY /Authorization.Infrastructure/Authorization.Infrastructure.csproj /Authorization.Infrastructure/
-COPY /Authorization.Api/Authorization.Api.csproj                  /Authorization.Api/
+COPY /User.Domain/User.Domain.csproj                 /User.Domain/
+COPY /User.Application/User.Application.csproj        /User.Application/
+COPY /User.Infrastructure/User.Infrastructure.csproj /User.Infrastructure/
+COPY /User.Api/User.Api.csproj                        /User.Api/
 
-RUN dotnet restore /Authorization.Api/Authorization.Api.csproj
+RUN dotnet restore /User.Api/User.Api.csproj
 
 # Copy the rest and publish
 COPY . .
-RUN dotnet publish /Authorization.Api/Authorization.Api.csproj \
+RUN dotnet publish /User.Api/User.Api.csproj \
     --configuration Release \
     --no-restore \
     --output /app/publish
@@ -28,4 +28,4 @@ ENV ASPNETCORE_URLS=http://+:7000
 
 EXPOSE 7000
 
-ENTRYPOINT ["dotnet", "Authorization.Api.dll"]
+ENTRYPOINT ["dotnet", "User.Api.dll"]

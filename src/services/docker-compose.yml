@@ -49,5 +49,24 @@ services:
       azurite:
         condition: service_started
 
+  # ── User API ─────────────────────────────────────────────────────────────────
+  user-api:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - "7001:7001"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Users: "Server=sql;Database=Users;User Id=sa;Password=MsSql2026!;TrustServerCertificate=True;"
+      Queue__ConnectionString: "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"
+      Queue__PublisherQueueName: "users"
+      Queue__ConsumerQueueName: "authorization"
+    depends_on:
+      sql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+
 volumes:
   sql_data:
