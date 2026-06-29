@@ -7,13 +7,13 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      MSSQL_SA_PASSWORD: "MsSql2026!"
     ports:
       - "1433:1433"
     volumes:
       - sql_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -Q 'SELECT 1' -b -C -o /dev/null"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P MsSql2026! -Q 'SELECT 1' -b -C -o /dev/null"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -37,11 +37,11 @@ services:
       - "7000:7000"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Authorization: "Server=sql;Database=Authorization;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
-      Jwt__Secret: "${JWT_SECRET}"
+      ConnectionStrings__Authorization: "Server=sql;Database=Authorization;User Id=sa;Password=MsSql2026!;TrustServerCertificate=True;"
+      Jwt__Secret: "$3cret!"
       Jwt__Issuer: "authorization-service"
       Jwt__Audience: "dashboard"
-      Queue__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tiq/XCQFLGGW6lVHHJSqFbA==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+      Queue__ConnectionString: "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"
       Queue__QueueName: "authorization"
     depends_on:
       sql:
