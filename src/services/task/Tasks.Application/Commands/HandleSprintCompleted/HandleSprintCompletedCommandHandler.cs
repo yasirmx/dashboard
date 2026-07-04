@@ -24,11 +24,17 @@ public sealed class HandleSprintCompletedCommandHandler : IRequestHandler<Handle
 
         foreach (var task in unfinished.Where(t => t.Status != TaskItemStatus.Closed))
         {
-            task.DetachFromSprint();
-            await _outbox.AddAsync(
-                OutboxMessage.Create(nameof(TaskRemovedFromSprint),
-                    JsonSerializer.Serialize(new TaskRemovedFromSprint(task.Id, request.SprintId))),
-                cancellationToken);
+            var (added, removed) = task.MoveToSprint(request.NextSprintId);
+
+            if (removed is not null)
+                await _outbox.AddAsync(
+                    OutboxMessage.Create(nameof(TaskRemovedFromSprint), JsonSerializer.Serialize(removed)),
+                    cancellationToken);
+
+            if (added is not null)
+                await _outbox.AddAsync(
+                    OutboxMessage.Create(nameof(TaskAddedToSprint), JsonSerializer.Serialize(added)),
+                    cancellationToken);
         }
 
         await _tasks.SaveChangesAsync(cancellationToken);

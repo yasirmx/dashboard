@@ -82,9 +82,13 @@ public sealed class SprintEventConsumer : BackgroundService
                 case SprintEventType.SprintCompleted:
                 {
                     using var payloadDoc = JsonDocument.Parse(payload);
-                    var sprintId = payloadDoc.RootElement.GetProperty("SprintId").GetGuid();
-                    await mediator.Send(new HandleSprintCompletedCommand(sprintId), ct);
-                    _logger.LogInformation("Handled SprintCompleted for Sprint {SprintId}", sprintId);
+                    var root2 = payloadDoc.RootElement;
+                    var sprintId = root2.GetProperty("SprintId").GetGuid();
+                    Guid? nextSprintId = root2.TryGetProperty("NextSprintId", out var nextProp) && nextProp.ValueKind == JsonValueKind.String
+                        ? nextProp.GetGuid()
+                        : null;
+                    await mediator.Send(new HandleSprintCompletedCommand(sprintId, nextSprintId), ct);
+                    _logger.LogInformation("Handled SprintCompleted for Sprint {SprintId} (rollover -> {NextSprintId})", sprintId, nextSprintId);
                     break;
                 }
                 case SprintEventType.SprintCancelled:
