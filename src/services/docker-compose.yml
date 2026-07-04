@@ -68,5 +68,27 @@ services:
       azurite:
         condition: service_started
 
+  # ── Task API ──────────────────────────────────────────────────────────────────
+  task-api:
+    build:
+      context: ./task
+      dockerfile: Dockerfile
+    ports:
+      - "7002:7002"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Tasks: "Server=sql;Database=Task;User Id=sa;Password=MsSql2026!;TrustServerCertificate=True;"
+      Jwt__Secret: "$3cret!"
+      Jwt__Issuer: "authorization-service"
+      Jwt__Audience: "dashboard"
+      Queue__ConnectionString: "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"
+      Queue__PublisherQueueName: "task-events"
+      Queue__ConsumerQueueName: "sprint-events"
+    depends_on:
+      sql:
+        condition: service_healthy
+      azurite:
+        condition: service_started
+
 volumes:
   sql_data:

@@ -1,0 +1,296 @@
+{
+  "info": {
+    "name": "Task Service",
+    "_postman_id": "task-service-collection",
+    "description": "Task microservice API — full CRUD, status workflow, sub-tasks, board view",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:7002", "type": "string" },
+    { "key": "token",   "value": "",                     "type": "string" },
+    { "key": "taskId",  "value": "",                     "type": "string" },
+    { "key": "subTaskId", "value": "",                   "type": "string" },
+    { "key": "sprintId",  "value": "00000000-0000-0000-0000-000000000001", "type": "string" },
+    { "key": "userId",    "value": "00000000-0000-0000-0000-000000000002", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('taskId', json.id);",
+                  "  pm.test('Task created', () => pm.response.to.have.status(201));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Implement login page\",\n  \"description\": \"Build the Angular login form with JWT\",\n  \"priority\": \"High\",\n  \"sprintId\": \"{{sprintId}}\",\n  \"assigneeId\": \"{{userId}}\",\n  \"estimatePoints\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Tasks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            }
+          }
+        },
+        {
+          "name": "Get Tasks by Sprint",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks?sprintId={{sprintId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [{ "key": "sprintId", "value": "{{sprintId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Get Tasks by Assignee",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks?assigneeId={{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [{ "key": "assigneeId", "value": "{{userId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Get Tasks by Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks?status=Active",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [{ "key": "status", "value": "Active" }]
+            }
+          }
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tasks/{{taskId}}"
+          }
+        },
+        {
+          "name": "Get Task with SubTasks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}?includeSubTasks=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "{{taskId}}"],
+              "query": [{ "key": "includeSubTasks", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Implement login page (updated)\",\n  \"description\": \"Build the Angular login form with JWT and refresh tokens\",\n  \"priority\": \"Critical\",\n  \"estimatePoints\": 8\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/tasks/{{taskId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Status Workflow",
+      "item": [
+        {
+          "name": "Change Status → Active",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"status\": \"Active\" }"
+            }
+          }
+        },
+        {
+          "name": "Change Status → Pending (blocked)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"status\": \"Pending\" }"
+            }
+          }
+        },
+        {
+          "name": "Change Status → Closed",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"status\": \"Closed\" }"
+            }
+          }
+        },
+        {
+          "name": "Change Status → Active (reopen)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"status\": \"Active\" }"
+            }
+          }
+        },
+        {
+          "name": "Assign Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"assigneeId\": \"{{userId}}\" }"
+            }
+          }
+        },
+        {
+          "name": "Move to Sprint",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/sprint",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"sprintId\": \"{{sprintId}}\" }"
+            }
+          }
+        },
+        {
+          "name": "Move to Backlog (remove from sprint)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/sprint",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"sprintId\": null }"
+            }
+          }
+        },
+        {
+          "name": "Reorder Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/order",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"orderIndex\": 2 }"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sub-tasks",
+      "item": [
+        {
+          "name": "Create Sub-task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('subTaskId', json.id);",
+                  "  pm.test('Sub-task created', () => pm.response.to.have.status(201));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/tasks/{{taskId}}/subtasks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Design login form wireframe\",\n  \"description\": \"Create Figma mockup for review\",\n  \"priority\": \"Medium\",\n  \"assigneeId\": \"{{userId}}\",\n  \"estimatePoints\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "List Sub-tasks",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tasks/{{taskId}}/subtasks"
+          }
+        },
+        {
+          "name": "Get Sub-task by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/tasks/{{subTaskId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Board",
+      "item": [
+        {
+          "name": "Get Sprint Board",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/sprints/{{sprintId}}/board"
+          }
+        }
+      ]
+    }
+  ]
+}
