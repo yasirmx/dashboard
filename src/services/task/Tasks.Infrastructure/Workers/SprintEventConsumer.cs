@@ -1,5 +1,6 @@
 using Tasks.Application.Commands.HandleSprintCancelled;
 using Tasks.Application.Commands.HandleSprintCompleted;
+using Tasks.Infrastructure.Enums;
 using Tasks.Infrastructure.Settings;
 using Azure.Storage.Queues;
 using MediatR;
@@ -30,7 +31,7 @@ public sealed class SprintEventConsumer : BackgroundService
         _client.CreateIfNotExists();
     }
 
-    protected override async System.Threading.Tasks.Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("SprintEventConsumer started.");
 
@@ -52,11 +53,11 @@ public sealed class SprintEventConsumer : BackgroundService
                 _logger.LogError(ex, "Error consuming sprint events.");
             }
 
-            await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
         }
     }
 
-    private async System.Threading.Tasks.Task ProcessMessageAsync(string messageText, CancellationToken ct)
+    private async Task ProcessMessageAsync(string messageText, CancellationToken ct)
     {
         try
         {
@@ -64,15 +65,21 @@ public sealed class SprintEventConsumer : BackgroundService
             using var doc = JsonDocument.Parse(raw);
             var root = doc.RootElement;
 
-            var eventType = root.GetProperty("EventType").GetString() ?? string.Empty;
+            var eventTypeRaw = root.GetProperty("EventType").GetString() ?? string.Empty;
             var payload = root.GetProperty("Payload").GetString() ?? "{}";
+
+            if (!Enum.TryParse<SprintEventType>(eventTypeRaw, ignoreCase: true, out var eventType))
+            {
+                _logger.LogDebug("Skipping unknown event type '{EventType}'", eventTypeRaw);
+                return;
+            }
 
             await using var scope = _scopeFactory.CreateAsyncScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
             switch (eventType)
             {
-                case "SprintCompleted":
+                case SprintEventType.SprintCompleted:
                 {
                     using var payloadDoc = JsonDocument.Parse(payload);
                     var sprintId = payloadDoc.RootElement.GetProperty("SprintId").GetGuid();
@@ -80,7 +87,7 @@ public sealed class SprintEventConsumer : BackgroundService
                     _logger.LogInformation("Handled SprintCompleted for Sprint {SprintId}", sprintId);
                     break;
                 }
-                case "SprintCancelled":
+                case SprintEventType.SprintCancelled:
                 {
                     using var payloadDoc = JsonDocument.Parse(payload);
                     var sprintId = payloadDoc.RootElement.GetProperty("SprintId").GetGuid();
@@ -88,9 +95,6 @@ public sealed class SprintEventConsumer : BackgroundService
                     _logger.LogInformation("Handled SprintCancelled for Sprint {SprintId}", sprintId);
                     break;
                 }
-                default:
-                    _logger.LogDebug("Skipping unknown event type '{EventType}'", eventType);
-                    break;
             }
         }
         catch (Exception ex)
