@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/services/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Folder Name="/services/authorization/">
+    <File Path="authorization/Dockerfile" />
+    <Project Path="authorization/Authorization.Api/Authorization.Api.csproj" />
+    <Project Path="authorization/Authorization.Application/Authorization.Application.csproj" />
+    <Project Path="authorization/Authorization.Domain/Authorization.Domain.csproj" />
+    <Project Path="authorization/Authorization.Infrastructure/Authorization.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/services/task/">
+    <File Path="user/Dockerfile" />
+    <Project Path="task/Tasks.Api/Tasks.Api.csproj" />
+    <Project Path="task/Tasks.Application/Tasks.Application.csproj" />
+    <Project Path="task/Tasks.Domain/Tasks.Domain.csproj" />
+    <Project Path="task/Tasks.Infrastructure/Tasks.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/services/user/">
+    <File Path="user/Dockerfile" />
+    <Project Path="user/User.Api/User.Api.csproj" />
+    <Project Path="user/User.Application/User.Application.csproj" />
+    <Project Path="user/User.Domain/User.Domain.csproj" />
+    <Project Path="user/User.Infrastructure/User.Infrastructure.csproj" />
+  </Folder>
+</Solution>
